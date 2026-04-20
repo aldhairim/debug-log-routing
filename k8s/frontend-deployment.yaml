@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: countdown-frontend
+  namespace: countdown
+  labels:
+    app: countdown-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: countdown-frontend
+  template:
+    metadata:
+      labels:
+        app: countdown-frontend
+    spec:
+      containers:
+        - name: countdown-frontend
+          image: countdown-frontend:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80

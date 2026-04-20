@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# macOS
+.DS_Store
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Claude Code session files
+.claude/
+
+# Secrets (never commit real credentials)
+*.secret.yaml
+*.local.yaml

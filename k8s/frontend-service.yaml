@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: countdown-frontend
+  namespace: countdown
+  labels:
+    app: countdown-frontend
+spec:
+  selector:
+    app: countdown-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: NodePort
