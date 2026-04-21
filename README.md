@@ -1,51 +1,70 @@
-# Alloy to Grafana / S3
+# debug-log-routing
 
-A Kubernetes app with a dual log routing pipeline via Grafana Alloy:
+A demo project showcasing cost-efficient debug log routing using Grafana Alloy on Kubernetes. Debug logs are separated from higher-severity logs and shipped to AWS S3, with two different query options.
 
-- **info/warn/error** → Grafana Cloud Loki
-- **debug** → AWS S3
+## The problem
 
-No additional binaries — uses the existing Alloy deployment from the [k8s-monitoring Helm chart](https://github.com/grafana/k8s-monitoring-helm).
+Loki (and Grafana Cloud Loki) bills on ingestion volume. Debug logs are the noisiest level and can dominate costs without adding operational value. This project routes debug logs to S3 (~$0.023/GB/month) instead, keeping only info/warn/error in Loki.
+
+## Two approaches
+
+### `athena/` — Raw JSON → S3 → Athena SQL
+Alloy writes raw log bodies (Serilog compact JSON) directly to S3 with Hive-compatible partitioning. AWS Athena queries them with SQL via the Grafana Athena data source.
+
+```
+App (Serilog)
+  ├── debug → Alloy → S3 (raw JSON, partitioned by year/month/day/hour/minute)
+  │                        └── AWS Athena → Grafana
+  └── info/warn/error → Alloy → Grafana Cloud Loki
+```
+
+### `loki-oss/` — Loki OSS → S3 chunks → LogQL
+Alloy ships debug logs to a self-hosted Loki OSS instance (deployed in-cluster). Loki stores chunks on S3 and exposes LogQL querying via Grafana using a Private Data Source Connect (PDC) tunnel.
+
+```
+App (Serilog)
+  ├── debug → Alloy → Loki OSS → S3 (Loki chunks)
+  │                      └── Grafana Cloud (via PDC) → LogQL
+  └── info/warn/error → Alloy → Grafana Cloud Loki
+```
 
 ## Stack
 
-- **App:** Node.js (Express) backend + React frontend
+- **App:** .NET 8 / ASP.NET Core minimal API, Serilog (compact JSON → stdout)
 - **Observability:** Grafana Alloy v1.15.0, k8s-monitoring Helm chart v3.8.6
-- **Log destinations:** Grafana Cloud Loki, AWS S3
+- **Log destinations:** AWS S3, Grafana Cloud Loki, Loki OSS (Helm chart v6.55.0)
+- **Query tools:** AWS Athena + Grafana Athena data source, LogQL via Grafana + PDC
 - **Tracing:** OpenTelemetry (OTLP → Alloy → Grafana Cloud Tempo)
 - **Runtime:** Minikube
 
 ## Repo structure
 
 ```
-├── backend/          # Node.js/Express API (TypeScript)
-├── frontend/         # React frontend (Vite)
-├── k8s/              # Kubernetes manifests for the app
-└── monitoring/       # Alloy config, Helm values, S3 pipeline
-    ├── SETUP.md              # Full setup guide
+├── app/                        # .NET 8 demo app (Serilog, OTel)
+├── k8s/                        # Kubernetes manifests
+├── athena/                     # Approach 1: debug → S3 raw JSON → Athena
+│   ├── k8s-monitoring-values.yaml   # Base Helm values
+│   ├── values-debug-s3.yaml         # Overlay: AWS creds, drop debug from Loki
+│   ├── s3-pipeline.alloy            # Alloy pipeline: debug → S3
+│   ├── patch-s3-pipeline.sh         # Post-upgrade configmap patch
+│   ├── patch-alloy-receiver.sh      # Removes duplicate cluster label
+│   └── aws-s3-secret.yaml           # Secret template
+└── loki-oss/                   # Approach 2: debug → Loki OSS → S3 chunks
+    ├── loki-values.yaml             # Loki Helm chart (SingleBinary, S3 backend)
     ├── k8s-monitoring-values.yaml   # Base Helm values
-    ├── values-debug-s3.yaml         # Overlay: AWS env vars, debug filter
-    ├── s3-pipeline.alloy            # Alloy River config for debug → S3
-    ├── patch-s3-pipeline.sh         # Post-upgrade configmap patch script
-    └── aws-s3-secret.yaml           # Secret template (fill in credentials)
+    ├── values-debug-loki.yaml       # Overlay: drop debug from Grafana Cloud
+    ├── loki-pipeline.alloy          # Alloy pipeline: debug → Loki OSS
+    ├── patch-loki-pipeline.sh       # Post-upgrade configmap patch
+    └── patch-alloy-receiver.sh      # Removes duplicate cluster label
 ```
 
-## How it works
+## Comparison
 
-```
-App (Winston logger)
-  │
-  ├── Console (all levels) → stdout → /var/log/pods
-  │                               │
-  │              ┌────────────────┴─────────────────┐
-  │         file pipeline                      s3 pipeline
-  │         (drops debug)                  (keeps only debug)
-  │              │                                  │
-  │       Grafana Cloud Loki                    AWS S3
-  │
-  └── OpenTelemetryTransportV3 (info+ only) → OTLP → Grafana Cloud
-```
-
-## Setup
-
-See [monitoring/SETUP.md](monitoring/SETUP.md) for the full step-by-step guide.
+| | `athena/` | `loki-oss/` |
+|---|---|---|
+| S3 format | Raw JSON (human-readable) | Loki binary chunks |
+| Query language | SQL | LogQL |
+| Query tool | AWS Athena + Grafana | Loki OSS + Grafana |
+| Infrastructure | S3 only | S3 + Loki pod |
+| Grafana access | Direct (public AWS API) | Via PDC tunnel |
+| Real-time | No (partition-based) | Yes |
