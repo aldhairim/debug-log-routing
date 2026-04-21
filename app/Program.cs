@@ -21,7 +21,7 @@ var logLevel = (Environment.GetEnvironmentVariable("LOG_LEVEL") ?? "info").ToLow
 
 // Logs go to stdout only — Alloy reads /var/log/pods and routes:
 //   debug        → S3 (s3-pipeline)
-//   info/warn/error → Grafana Cloud Loki (existing pipeline)
+//   info/warn/error → Grafana Cloud (existing pipeline)
 // No OTel log exporter — avoids duplicates and the "back door" to Grafana Cloud.
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Is(logLevel)

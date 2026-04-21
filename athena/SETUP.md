@@ -1,7 +1,7 @@
 # Debug Logs → S3 via Grafana Alloy
 
 Routes logs from Kubernetes pods through two parallel pipelines:
-- **info/warn/error** → Grafana Cloud Loki (existing)
+- **info/warn/error** → Grafana Cloud (existing)
 - **debug** → AWS S3 (`aldhair-debug-logs`, `us-east-1`)
 
 No new binaries — uses the existing Alloy deployment via k8s-monitoring Helm chart v3.8.6.
@@ -216,13 +216,13 @@ App (Winston)
   │                    loki.process                      loki.process
   │                    (drops debug)                     (keeps only debug)
   │                         │                                   │
-  │                  Grafana Cloud Loki              otelcol.receiver.loki
+  │                  Grafana Cloud              otelcol.receiver.loki
   │                                                             │
   │                                                  otelcol.exporter.awss3
   │                                                             │
   │                                               s3://aldhair-debug-logs/
   │
-  └─── OpenTelemetryTransportV3 (info+ only) ──► OTLP :4317 ──► Grafana Cloud Loki
+  └─── OpenTelemetryTransportV3 (info+ only) ──► OTLP :4317 ──► Grafana Cloud
 ```
 
 The OTel transport is capped at `info` level to prevent debug logs leaking to Grafana Cloud via the OTLP path (which has no debug filter). The S3 pipeline is a second `loki.source.file` reading the same log files in parallel. Alloy's `otelcol.exporter.awss3` is an experimental component, which is why `stabilityLevel: "experimental"` is required in the Helm values.

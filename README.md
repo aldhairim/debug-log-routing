@@ -4,7 +4,7 @@ A demo project showcasing cost-efficient debug log routing using Grafana Alloy o
 
 ## Use case
 
-Grafana Cloud bills on log ingestion volume. For teams with high-volume debug logging, this project demonstrates how to route debug logs to S3 for cost-efficient storage while keeping info/warn/error in Grafana Cloud Loki — with two different approaches for querying the archived logs.
+Grafana Cloud bills on log ingestion volume. For teams with high-volume debug logging, this project demonstrates how to route debug logs to S3 for cost-efficient storage while keeping info/warn/error in Grafana Cloud — with two different approaches for querying the archived logs.
 
 ## Two approaches
 
@@ -15,7 +15,7 @@ Alloy writes raw log bodies (Serilog compact JSON) directly to S3 with Hive-comp
 App (Serilog)
   ├── debug → Alloy → S3 (raw JSON, partitioned by year/month/day/hour/minute)
   │                        └── AWS Athena → Grafana
-  └── info/warn/error → Alloy → Grafana Cloud Loki
+  └── info/warn/error → Alloy → Grafana Cloud
 ```
 
 ### `loki-oss/` — Loki OSS → S3 chunks → LogQL
@@ -25,16 +25,16 @@ Alloy ships debug logs to a self-hosted Loki OSS instance (deployed in-cluster).
 App (Serilog)
   ├── debug → Alloy → Loki OSS → S3 (Loki chunks)
   │                      └── Grafana Cloud (via PDC) → LogQL
-  └── info/warn/error → Alloy → Grafana Cloud Loki
+  └── info/warn/error → Alloy → Grafana Cloud
 ```
 
 ## Stack
 
 - **App:** .NET 8 / ASP.NET Core minimal API, Serilog (compact JSON → stdout)
 - **Observability:** Grafana Alloy v1.15.0, k8s-monitoring Helm chart v3.8.6
-- **Log destinations:** AWS S3, Grafana Cloud Loki, Loki OSS (Helm chart v6.55.0)
+- **Log destinations:** AWS S3, Grafana Cloud, Loki OSS (Helm chart v6.55.0)
 - **Query tools:** AWS Athena + Grafana Athena data source, LogQL via Grafana + PDC
-- **Tracing:** OpenTelemetry (OTLP → Alloy → Grafana Cloud Tempo)
+- **Tracing:** OpenTelemetry (OTLP → Alloy → Grafana Cloud)
 - **Runtime:** Minikube
 
 ## Repo structure
