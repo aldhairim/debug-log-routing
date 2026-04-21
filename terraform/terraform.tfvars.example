@@ -1,0 +1,5 @@
+region                      = "us-east-1"
+athena_logs_bucket          = "your-athena-logs-bucket"
+loki_oss_bucket             = "your-loki-oss-bucket"
+athena_query_results_bucket = "your-athena-query-results-bucket"
+iam_user                    = "your-iam-username"
