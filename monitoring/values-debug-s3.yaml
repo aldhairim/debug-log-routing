@@ -46,10 +46,10 @@ podLogs:
   enabled: true
   extraLogProcessingStages: |
     stage.json {
-      expressions = { level = "level" }
+      expressions = { level = "level", deployment_environment = "deployment_environment" }
     }
     stage.labels {
-      values = { level = "" }
+      values = { level = "", deployment_environment = "" }
     }
     stage.match {
       selector = "{level=\"debug\"}"

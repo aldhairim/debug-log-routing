@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: countdown-backend
+  namespace: countdown
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: countdown-backend
+  template:
+    metadata:
+      labels:
+        app: countdown-backend
+    spec:
+      containers:
+        - name: countdown-backend
+          image: countdown-backend:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: LOG_LEVEL
+              value: debug
+            - name: ASPNETCORE_ENVIRONMENT
+              value: production
+            - name: ASPNETCORE_URLS
+              value: http://+:8080

@@ -1,5 +1,6 @@
-# Dependencies
-node_modules/
+# .NET build output
+bin/
+obj/
 
 # Build output
 dist/
