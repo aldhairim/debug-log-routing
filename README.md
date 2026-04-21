@@ -14,12 +14,12 @@ Alloy writes raw log bodies (Serilog compact JSON) directly to S3 with Hive-comp
 ```
 App (Serilog)
   ├── debug → Alloy → S3 (raw JSON, partitioned by year/month/day/hour/minute)
-  │                        └── AWS Athena → Grafana
+  │                        └── AWS Athena → Grafana Cloud
   └── info/warn/error → Alloy → Grafana Cloud
 ```
 
 ### `loki-oss/` — Loki OSS → S3 chunks → LogQL
-Alloy ships debug logs to a self-hosted Loki OSS instance (deployed in-cluster). Loki stores chunks on S3 and exposes LogQL querying via Grafana using a Private Data Source Connect (PDC) tunnel.
+Alloy ships debug logs to a self-hosted Loki OSS instance (deployed in-cluster). Loki stores chunks on S3 and exposes LogQL querying via Grafana Cloud using a Private Data Source Connect (PDC) tunnel.
 
 ```
 App (Serilog)
@@ -31,9 +31,9 @@ App (Serilog)
 ## Stack
 
 - **App:** .NET 8 / ASP.NET Core minimal API, Serilog (compact JSON → stdout)
-- **Observability:** Grafana Alloy v1.15.0, k8s-monitoring Helm chart v3.8.6
-- **Log destinations:** AWS S3, Grafana Cloud, Loki OSS (Helm chart v6.55.0)
-- **Query tools:** AWS Athena + Grafana Athena data source, LogQL via Grafana + PDC
+- **Observability:** Grafana Alloy v1.15.0, k8s-monitoring Helm chart
+- **Log destinations:** AWS S3, Grafana Cloud, Loki OSS
+- **Query tools:** AWS Athena + Grafana Athena data source, LogQL via Grafana Cloud + PDC
 - **Tracing:** OpenTelemetry (OTLP → Alloy → Grafana Cloud)
 - **Runtime:** Minikube
 
@@ -64,7 +64,7 @@ App (Serilog)
 |---|---|---|
 | S3 format | Raw JSON (human-readable) | Loki binary chunks |
 | Query language | SQL | LogQL |
-| Query tool | AWS Athena + Grafana | Loki OSS + Grafana |
+| Query tool | AWS Athena + Grafana Cloud | Loki OSS + Grafana Cloud |
 | Infrastructure | S3 only | S3 + Loki pod |
 | Grafana access | Direct (public AWS API) | Via PDC tunnel |
 | Real-time | No (partition-based) | Yes |
