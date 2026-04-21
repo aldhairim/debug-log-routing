@@ -31,7 +31,7 @@ App (Serilog)
 ## Stack
 
 - **App:** .NET 8 / ASP.NET Core minimal API, Serilog (compact JSON → stdout)
-- **Observability:** Grafana Alloy v1.15.0, k8s-monitoring Helm chart
+- **Observability:** Grafana Alloy, k8s-monitoring Helm chart
 - **Log destinations:** AWS S3, Grafana Cloud, Loki OSS
 - **Query tools:** AWS Athena + Grafana Athena data source, LogQL via Grafana Cloud + PDC
 - **Tracing:** OpenTelemetry (OTLP → Alloy → Grafana Cloud)
