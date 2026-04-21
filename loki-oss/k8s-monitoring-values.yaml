@@ -1,0 +1,241 @@
+USER-SUPPLIED VALUES:
+alloy-logs:
+  alloy:
+    extraEnv:
+    - name: GCLOUD_RW_API_KEY
+      valueFrom:
+        secretKeyRef:
+          key: password
+          name: alloy-logs-remote-cfg-grafana-k8s-monitoring
+    - name: CLUSTER_NAME
+      value: minikube
+    - name: NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: GCLOUD_FM_COLLECTOR_ID
+      value: grafana-k8s-monitoring-$(CLUSTER_NAME)-$(NAMESPACE)-alloy-logs-$(NODE_NAME)
+  enabled: true
+  remoteConfig:
+    auth:
+      password: <YOUR_GRAFANA_CLOUD_API_KEY>
+      type: basic
+      username: "<YOUR_GRAFANA_INSTANCE_ID>"
+    enabled: true
+    url: https://<YOUR_FLEET_MANAGEMENT_HOST>
+alloy-metrics:
+  alloy:
+    extraEnv:
+    - name: GCLOUD_RW_API_KEY
+      valueFrom:
+        secretKeyRef:
+          key: password
+          name: alloy-metrics-remote-cfg-grafana-k8s-monitoring
+    - name: CLUSTER_NAME
+      value: minikube
+    - name: NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: GCLOUD_FM_COLLECTOR_ID
+      value: grafana-k8s-monitoring-$(CLUSTER_NAME)-$(NAMESPACE)-$(POD_NAME)
+  enabled: true
+  remoteConfig:
+    auth:
+      password: <YOUR_GRAFANA_CLOUD_API_KEY>
+      type: basic
+      username: "<YOUR_GRAFANA_INSTANCE_ID>"
+    enabled: true
+    url: https://<YOUR_FLEET_MANAGEMENT_HOST>
+alloy-profiles:
+  alloy:
+    extraEnv:
+    - name: GCLOUD_RW_API_KEY
+      valueFrom:
+        secretKeyRef:
+          key: password
+          name: alloy-profiles-remote-cfg-grafana-k8s-monitoring
+    - name: CLUSTER_NAME
+      value: minikube
+    - name: NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: GCLOUD_FM_COLLECTOR_ID
+      value: grafana-k8s-monitoring-$(CLUSTER_NAME)-$(NAMESPACE)-alloy-profiles-$(NODE_NAME)
+  enabled: true
+  remoteConfig:
+    auth:
+      password: <YOUR_GRAFANA_CLOUD_API_KEY>
+      type: basic
+      username: "<YOUR_GRAFANA_INSTANCE_ID>"
+    enabled: true
+    url: https://<YOUR_FLEET_MANAGEMENT_HOST>
+alloy-receiver:
+  alloy:
+    extraEnv:
+    - name: GCLOUD_RW_API_KEY
+      valueFrom:
+        secretKeyRef:
+          key: password
+          name: alloy-receiver-remote-cfg-grafana-k8s-monitoring
+    - name: CLUSTER_NAME
+      value: minikube
+    - name: NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: GCLOUD_FM_COLLECTOR_ID
+      value: grafana-k8s-monitoring-$(CLUSTER_NAME)-$(NAMESPACE)-alloy-receiver-$(NODE_NAME)
+    extraPorts:
+    - name: otlp-grpc
+      port: 4317
+      protocol: TCP
+      targetPort: 4317
+    - name: otlp-http
+      port: 4318
+      protocol: TCP
+      targetPort: 4318
+    - name: zipkin
+      port: 9411
+      protocol: TCP
+      targetPort: 9411
+  enabled: true
+  remoteConfig:
+    auth:
+      password: <YOUR_GRAFANA_CLOUD_API_KEY>
+      type: basic
+      username: "<YOUR_GRAFANA_INSTANCE_ID>"
+    enabled: true
+    url: https://<YOUR_FLEET_MANAGEMENT_HOST>
+alloy-singleton:
+  alloy:
+    extraEnv:
+    - name: GCLOUD_RW_API_KEY
+      valueFrom:
+        secretKeyRef:
+          key: password
+          name: alloy-singleton-remote-cfg-grafana-k8s-monitoring
+    - name: CLUSTER_NAME
+      value: minikube
+    - name: NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: GCLOUD_FM_COLLECTOR_ID
+      value: grafana-k8s-monitoring-$(CLUSTER_NAME)-$(NAMESPACE)-$(POD_NAME)
+  enabled: true
+  remoteConfig:
+    auth:
+      password: <YOUR_GRAFANA_CLOUD_API_KEY>
+      type: basic
+      username: "<YOUR_GRAFANA_INSTANCE_ID>"
+    enabled: true
+    url: https://<YOUR_FLEET_MANAGEMENT_HOST>
+applicationObservability:
+  enabled: true
+  receivers:
+    otlp:
+      grpc:
+        enabled: true
+        port: 4317
+      http:
+        enabled: true
+        port: 4318
+    zipkin:
+      enabled: true
+      port: 9411
+autoInstrumentation:
+  beyla:
+    deliverTracesToApplicationObservability: false
+  enabled: true
+cluster:
+  name: minikube
+clusterEvents:
+  enabled: true
+clusterMetrics:
+  enabled: true
+  kepler:
+    enabled: true
+  opencost:
+    enabled: true
+    metricsSource: grafana-cloud-metrics
+    opencost:
+      exporter:
+        defaultClusterId: <YOUR_CLUSTER_NAME>
+      prometheus:
+        existingSecretName: grafana-cloud-metrics-grafana-k8s-monitoring
+        external:
+          url: https://<YOUR_PROMETHEUS_HOST>/api/prom
+destinations:
+- auth:
+    password: <YOUR_GRAFANA_CLOUD_API_KEY>
+    type: basic
+    username: "<YOUR_GRAFANA_METRICS_USERNAME>"
+  name: grafana-cloud-metrics
+  type: prometheus
+  url: https://<YOUR_PROMETHEUS_HOST>/api/prom/push
+- auth:
+    password: <YOUR_GRAFANA_CLOUD_API_KEY>
+    type: basic
+    username: "<YOUR_GRAFANA_LOGS_USERNAME>"
+  name: grafana-cloud-logs
+  type: loki
+  url: https://<YOUR_LOKI_HOST>/loki/api/v1/push
+- auth:
+    password: <YOUR_GRAFANA_CLOUD_API_KEY>
+    type: basic
+    username: "<YOUR_GRAFANA_INSTANCE_ID>"
+  logs:
+    enabled: true
+  metrics:
+    enabled: true
+  name: gc-otlp-endpoint
+  protocol: http
+  traces:
+    enabled: true
+  type: otlp
+  url: https://<YOUR_OTLP_HOST>/otlp
+- auth:
+    password: <YOUR_GRAFANA_CLOUD_API_KEY>
+    type: basic
+    username: "<YOUR_GRAFANA_INSTANCE_ID>"
+  name: grafana-cloud-profiles
+  type: pyroscope
+  url: https://<YOUR_PROFILES_HOST>:443
+podLogs:
+  enabled: true
+profiling:
+  enabled: true

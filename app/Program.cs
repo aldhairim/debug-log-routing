@@ -45,7 +45,8 @@ builder.Services.AddOpenTelemetry()
         .AddAttributes(new Dictionary<string, object>
         {
             ["deployment.environment"] = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "production",
-            ["service.namespace"]      = "countdown"
+            ["service.namespace"]      = "countdown",
+            ["service.instance.id"]    = Environment.GetEnvironmentVariable("POD_NAME") ?? Environment.MachineName
         }))
     .WithTracing(t => t
         .AddAspNetCoreInstrumentation()

@@ -1,6 +1,6 @@
 
-// Debug logs → S3 pipeline
-discovery.kubernetes "pods_s3" {
+// Debug logs → Loki OSS pipeline
+discovery.kubernetes "pods_loki_oss" {
   role = "pod"
   selectors {
     role = "pod"
@@ -8,8 +8,8 @@ discovery.kubernetes "pods_s3" {
   }
 }
 
-discovery.relabel "pods_s3" {
-  targets = discovery.kubernetes.pods_s3.targets
+discovery.relabel "pods_loki_oss" {
+  targets = discovery.kubernetes.pods_loki_oss.targets
 
   rule {
     action = "replace"
@@ -33,18 +33,22 @@ discovery.relabel "pods_s3" {
     replacement = "/var/log/pods/*$1/*.log"
     target_label = "__path__"
   }
+  rule {
+    source_labels = ["__meta_kubernetes_pod_label_app"]
+    target_label  = "service_name"
+  }
 }
 
-local.file_match "debug_pods" {
-  path_targets = discovery.relabel.pods_s3.output
+local.file_match "debug_pods_loki" {
+  path_targets = discovery.relabel.pods_loki_oss.output
 }
 
-loki.source.file "debug_pods" {
-  targets    = local.file_match.debug_pods.targets
-  forward_to = [loki.process.debug_to_s3.receiver]
+loki.source.file "debug_pods_loki" {
+  targets    = local.file_match.debug_pods_loki.targets
+  forward_to = [loki.process.debug_to_loki_oss.receiver]
 }
 
-loki.process "debug_to_s3" {
+loki.process "debug_to_loki_oss" {
   stage.match {
     selector = "{tmp_container_runtime=~\"containerd|cri-o|\"}"
     stage.cri { max_partial_lines = 100 }
@@ -63,22 +67,11 @@ loki.process "debug_to_s3" {
     selector = "{level!=\"debug\"}"
     action   = "drop"
   }
-  forward_to = [otelcol.receiver.loki.s3_bridge.receiver]
+  forward_to = [loki.write.loki_oss.receiver]
 }
 
-otelcol.receiver.loki "s3_bridge" {
-  output {
-    logs = [otelcol.exporter.awss3.debug.input]
-  }
-}
-
-otelcol.exporter.awss3 "debug" {
-  s3_uploader {
-    region    = "us-east-1"
-    s3_bucket = "aldhair-debug-logs"
-    s3_prefix = "logs/debug"
-  }
-  marshaler {
-    type = "body"
+loki.write "loki_oss" {
+  endpoint {
+    url = "http://loki.loki-oss.svc.cluster.local:3100/loki/api/v1/push"
   }
 }

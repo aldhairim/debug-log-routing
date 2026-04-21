@@ -28,9 +28,9 @@ alloy-logs:
     auth:
       password: <YOUR_GRAFANA_CLOUD_API_KEY>
       type: basic
-      username: "467949"
+      username: "<YOUR_GRAFANA_INSTANCE_ID>"
     enabled: true
-    url: https://fleet-management-prod-001.grafana.net
+    url: https://<YOUR_FLEET_MANAGEMENT_HOST>
 alloy-metrics:
   alloy:
     extraEnv:
@@ -56,9 +56,9 @@ alloy-metrics:
     auth:
       password: <YOUR_GRAFANA_CLOUD_API_KEY>
       type: basic
-      username: "467949"
+      username: "<YOUR_GRAFANA_INSTANCE_ID>"
     enabled: true
-    url: https://fleet-management-prod-001.grafana.net
+    url: https://<YOUR_FLEET_MANAGEMENT_HOST>
 alloy-profiles:
   alloy:
     extraEnv:
@@ -88,9 +88,9 @@ alloy-profiles:
     auth:
       password: <YOUR_GRAFANA_CLOUD_API_KEY>
       type: basic
-      username: "467949"
+      username: "<YOUR_GRAFANA_INSTANCE_ID>"
     enabled: true
-    url: https://fleet-management-prod-001.grafana.net
+    url: https://<YOUR_FLEET_MANAGEMENT_HOST>
 alloy-receiver:
   alloy:
     extraEnv:
@@ -133,9 +133,9 @@ alloy-receiver:
     auth:
       password: <YOUR_GRAFANA_CLOUD_API_KEY>
       type: basic
-      username: "467949"
+      username: "<YOUR_GRAFANA_INSTANCE_ID>"
     enabled: true
-    url: https://fleet-management-prod-001.grafana.net
+    url: https://<YOUR_FLEET_MANAGEMENT_HOST>
 alloy-singleton:
   alloy:
     extraEnv:
@@ -161,9 +161,9 @@ alloy-singleton:
     auth:
       password: <YOUR_GRAFANA_CLOUD_API_KEY>
       type: basic
-      username: "467949"
+      username: "<YOUR_GRAFANA_INSTANCE_ID>"
     enabled: true
-    url: https://fleet-management-prod-001.grafana.net
+    url: https://<YOUR_FLEET_MANAGEMENT_HOST>
 applicationObservability:
   enabled: true
   receivers:
@@ -194,30 +194,30 @@ clusterMetrics:
     metricsSource: grafana-cloud-metrics
     opencost:
       exporter:
-        defaultClusterId: minikube
+        defaultClusterId: <YOUR_CLUSTER_NAME>
       prometheus:
         existingSecretName: grafana-cloud-metrics-grafana-k8s-monitoring
         external:
-          url: https://prometheus-prod-10-prod-us-central-0.grafana.net./api/prom
+          url: https://<YOUR_PROMETHEUS_HOST>/api/prom
 destinations:
 - auth:
     password: <YOUR_GRAFANA_CLOUD_API_KEY>
     type: basic
-    username: "636671"
+    username: "<YOUR_GRAFANA_METRICS_USERNAME>"
   name: grafana-cloud-metrics
   type: prometheus
-  url: https://prometheus-prod-10-prod-us-central-0.grafana.net./api/prom/push
+  url: https://<YOUR_PROMETHEUS_HOST>/api/prom/push
 - auth:
     password: <YOUR_GRAFANA_CLOUD_API_KEY>
     type: basic
-    username: "317306"
+    username: "<YOUR_GRAFANA_LOGS_USERNAME>"
   name: grafana-cloud-logs
   type: loki
-  url: https://logs-prod3.grafana.net./loki/api/v1/push
+  url: https://<YOUR_LOKI_HOST>/loki/api/v1/push
 - auth:
     password: <YOUR_GRAFANA_CLOUD_API_KEY>
     type: basic
-    username: "467949"
+    username: "<YOUR_GRAFANA_INSTANCE_ID>"
   logs:
     enabled: true
   metrics:
@@ -227,14 +227,14 @@ destinations:
   traces:
     enabled: true
   type: otlp
-  url: https://otlp-gateway-prod-us-central-0.grafana.net./otlp
+  url: https://<YOUR_OTLP_HOST>/otlp
 - auth:
     password: <YOUR_GRAFANA_CLOUD_API_KEY>
     type: basic
-    username: "467949"
+    username: "<YOUR_GRAFANA_INSTANCE_ID>"
   name: grafana-cloud-profiles
   type: pyroscope
-  url: https://profiles-prod-003.grafana.net.:443
+  url: https://<YOUR_PROFILES_HOST>:443
 podLogs:
   enabled: true
 profiling:

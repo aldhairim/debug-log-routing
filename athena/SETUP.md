@@ -113,6 +113,16 @@ bash /Users/aldhair/Grafana/count-down/CountDown/monitoring/patch-s3-pipeline.sh
 
 This script is idempotent — it skips patching if the S3 pipeline is already present.
 
+### Step 4 — Patch alloy-receiver to remove duplicate cluster label
+
+The k8s-monitoring chart's generated config adds both `cluster` and `k8s.cluster.name` to every OTLP signal, causing x2 duplicates in App O11y. This patch removes the `cluster` alias (Prometheus-style) from the OTLP pipeline, keeping only `k8s.cluster.name` (OTel semantic convention). The `cluster` label for Prometheus dashboards is handled by the alloy-metrics scraping pipeline and is unaffected.
+
+```bash
+bash /Users/aldhair/Grafana/count-down/CountDown/monitoring/patch-alloy-receiver.sh
+```
+
+This script is idempotent — it skips patching if the alias is already removed.
+
 ---
 
 ## App setup (countdown-backend)

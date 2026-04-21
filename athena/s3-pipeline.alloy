@@ -1,0 +1,84 @@
+
+// Debug logs → S3 pipeline
+discovery.kubernetes "pods_s3" {
+  role = "pod"
+  selectors {
+    role = "pod"
+    field = "spec.nodeName=" + sys.env("HOSTNAME")
+  }
+}
+
+discovery.relabel "pods_s3" {
+  targets = discovery.kubernetes.pods_s3.targets
+
+  rule {
+    action = "replace"
+    source_labels = ["__meta_kubernetes_pod_container_id"]
+    regex = "^(\\S+):\\/\\/.+$"
+    replacement = "$1"
+    target_label = "tmp_container_runtime"
+  }
+  rule {
+    source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+    separator = "/"
+    action = "replace"
+    replacement = "/var/log/pods/*$1/*.log"
+    target_label = "__path__"
+  }
+  rule {
+    source_labels = ["__meta_kubernetes_pod_annotation_kubernetes_io_config_mirror", "__meta_kubernetes_pod_container_name"]
+    separator = "/"
+    regex = "(.+/.+)"
+    action = "replace"
+    replacement = "/var/log/pods/*$1/*.log"
+    target_label = "__path__"
+  }
+}
+
+local.file_match "debug_pods" {
+  path_targets = discovery.relabel.pods_s3.output
+}
+
+loki.source.file "debug_pods" {
+  targets    = local.file_match.debug_pods.targets
+  forward_to = [loki.process.debug_to_s3.receiver]
+}
+
+loki.process "debug_to_s3" {
+  stage.match {
+    selector = "{tmp_container_runtime=~\"containerd|cri-o|\"}"
+    stage.cri { max_partial_lines = 100 }
+  }
+  stage.match {
+    selector = "{tmp_container_runtime=\"docker\"}"
+    stage.docker {}
+  }
+  stage.json {
+    expressions = { level = "level" }
+  }
+  stage.labels {
+    values = { level = "" }
+  }
+  stage.match {
+    selector = "{level!=\"debug\"}"
+    action   = "drop"
+  }
+  forward_to = [otelcol.receiver.loki.s3_bridge.receiver]
+}
+
+otelcol.receiver.loki "s3_bridge" {
+  output {
+    logs = [otelcol.exporter.awss3.debug.input]
+  }
+}
+
+otelcol.exporter.awss3 "debug" {
+  s3_uploader {
+    region    = "us-east-1"
+    s3_bucket = "<YOUR_ATHENA_S3_BUCKET>"
+    s3_prefix = "logs/debug"
+  }
+  marshaler {
+    type = "body"
+  }
+}
