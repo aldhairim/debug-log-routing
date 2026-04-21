@@ -2,7 +2,7 @@
 
 Routes logs from Kubernetes pods through two parallel pipelines:
 - **info/warn/error** → Grafana Cloud (existing)
-- **debug** → AWS S3 (`aldhair-debug-logs`, `us-east-1`)
+- **debug** → AWS S3 (`YOUR_ATHENA_S3_BUCKET`, `us-east-1`)
 
 No new binaries — uses the existing Alloy deployment via k8s-monitoring Helm chart v3.8.6.
 
@@ -26,7 +26,7 @@ No new binaries — uses the existing Alloy deployment via k8s-monitoring Helm c
 - `kubectl` configured for the Minikube context
 - `helm` installed
 - `aws-vault` configured with a profile (`default`) that has S3 write access
-- S3 bucket `aldhair-debug-logs` created in `us-east-1`
+- S3 bucket `YOUR_ATHENA_S3_BUCKET` created in `us-east-1`
 - k8s-monitoring Helm repo added:
   ```bash
   helm repo add grafana https://grafana.github.io/helm-charts
@@ -186,7 +186,7 @@ kubectl scale deployment/countdown-backend -n countdown --replicas=1
 Check S3 for new objects:
 
 ```bash
-aws-vault exec default -- aws s3 ls s3://aldhair-debug-logs/logs/debug/ --recursive | tail -20
+aws-vault exec default -- aws s3 ls s3://YOUR_ATHENA_S3_BUCKET/logs/debug/ --recursive | tail -20
 ```
 
 Check Alloy is healthy:
@@ -220,7 +220,7 @@ App (Winston)
   │                                                             │
   │                                                  otelcol.exporter.awss3
   │                                                             │
-  │                                               s3://aldhair-debug-logs/
+  │                                               s3://YOUR_ATHENA_S3_BUCKET/
   │
   └─── OpenTelemetryTransportV3 (info+ only) ──► OTLP :4317 ──► Grafana Cloud
 ```
