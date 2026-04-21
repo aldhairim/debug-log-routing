@@ -2,9 +2,9 @@
 
 A demo project showcasing cost-efficient debug log routing using Grafana Alloy on Kubernetes. Debug logs are separated from higher-severity logs and shipped to AWS S3, with two different query options.
 
-## The problem
+## Use case
 
-Loki (and Grafana Cloud Loki) bills on ingestion volume. Debug logs are the noisiest level and can dominate costs without adding operational value. This project routes debug logs to S3 (~$0.023/GB/month) instead, keeping only info/warn/error in Loki.
+Grafana Cloud bills on log ingestion volume. For teams with high-volume debug logging, this project demonstrates how to route debug logs to S3 for cost-efficient storage while keeping info/warn/error in Grafana Cloud Loki — with two different approaches for querying the archived logs.
 
 ## Two approaches
 
